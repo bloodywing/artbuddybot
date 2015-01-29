@@ -1,11 +1,6 @@
 #!/usr/bin/env python
 
-"""IRC Bot Example
-
-This example shows how to use several components in circuits as well
-as one of the builtin networking protocols. This IRC Bot simply connects
-to the FreeNode IRC Network and joins the #circuits channel. It will also
-echo anything privately messages to it in response.
+"""IRC Bot
 """
 
 
@@ -30,7 +25,7 @@ class Bot(Component):
     def init(self, host="irc.freenode.net", port="6667", channel=channel):
         self.host = host
         self.port = int(port)
-        self.nick = 'ArtBot'
+        self.nick = 'ArtBot_dev'
 
         # Add TCPClient and IRC to the system.
         TCPClient(channel=self.channel).register(self)
@@ -82,7 +77,9 @@ class Bot(Component):
         This event is triggered by the ``IRC`` Protocol Component for each
         message we receieve from the server.
         """
-        pass
+        if message.startswith('!mods'):
+            message = ', '.join(self._mods())
+            self.fire(PRIVMSG(target, message))
         #if target.startswith("#"):
         #    self.fire(PRIVMSG(target, message))
         #else:
@@ -99,6 +96,13 @@ class Bot(Component):
     def _return_faq(self):
         _ = requests.get('https://raw.githubusercontent.com/bloodywing/artbuddybot_text/master/faq.txt')
         return _.text
+        
+    def _mods(self):
+        _ = requests.get('http://www.reddit.com/r/ArtBuddy/about/moderators.json')
+        mods_json = _.json()
+        print(mods_json)
+        return [entry['name'] for entry in mods_json['data']['children']]
+        
 
 
 # Configure and run the system
